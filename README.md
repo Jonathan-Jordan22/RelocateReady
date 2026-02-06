@@ -1,5 +1,6 @@
 # RelocateReady
 
-A multi-user backend platform to help people plan international relocations by comparing locations, preferences, and trade-offs.
-
-Built with FastAPI and Python.
+RelocateReady is a multi-user backend platform for planning international relocations.  
+- Built with FastAPI and Python  
+- Includes user creation endpoint with input validation  
+- Ready for multi-user data models (locations, preferences)
