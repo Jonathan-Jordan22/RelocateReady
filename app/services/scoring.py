@@ -4,7 +4,7 @@ def calculate_relocation_score(user_preferences, location):
 
     # Cost of living
     cost_weight = user_preferences.cost_importance
-    cost_score = max(0. 100 - location.average_rent / 50)
+    cost_score = max(0, 100 - location.average_rent / 50)
     weighted_score += cost_score * cost_weight
     total_weight += cost_weight
 

@@ -1,6 +1,5 @@
 from fastapi import FastAPI
-from .database import engine
-from .models import Base
+from .database import engine, Base
 from .routes import users, locations, score
 
 app = FastAPI(title="RelocateReady")
