@@ -46,3 +46,32 @@ def score_location(user_id: int, location_id: int, db: Session = Depends(get_db)
         "location": location.name,
         "score": score
     }
+
+@router.get("/user/{user_id}/ranked")
+def ranked_locations(user_id: int, db: Session = Depends(get_db)):
+    """
+    Get all saved locations for a user, ranked by relocation score.
+    """
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if not user.preferences:
+        raise HTTPException(status_code=400, detail="User preferences not set")
+
+    # Get all saved locations
+    saved = db.query(models.UserLocation).filter_by(user_id=user_id).all()
+    if not saved:
+        return {"message": "No saved locations"}
+
+    # Calculate scores for each saved location
+    scored = []
+    for s in saved:
+        score = calculate_relocation_score(user.preferences, s.location)
+        scored.append((score, s.location.name))
+
+    # Sort descending by score
+    scored.sort(key=lambda x: x[0], reverse=True)
+
+    # Return as list of dicts
+    return [{"location": loc, "score": score} for score, loc in scored]
