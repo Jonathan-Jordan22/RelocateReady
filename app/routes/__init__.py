@@ -1,3 +1,3 @@
-from . import users, locations, score
+from . import scoring, users, locations
 
-__all__ = ["users", "locations", "score"]
+__all__ = ["users", "locations", "scoring"]

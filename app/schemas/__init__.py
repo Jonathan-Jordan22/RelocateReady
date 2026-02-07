@@ -1,3 +1,3 @@
 from .user import UserCreate, UserResponse
 from .location import LocationCreate, LocationResponse
-from .score import ScoreRequest
+from .scoring import ScoreRequest
