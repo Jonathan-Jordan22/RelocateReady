@@ -10,7 +10,7 @@ class UserResponse(BaseModel):
     name: str
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 class LocationCreate(BaseModel):
     name: str
@@ -26,4 +26,8 @@ class LocationResponse(BaseModel):
     safety_index: float = None
 
     class Config:
-        orm_mode = True
+        from_attributes = True
+
+class ScoreRequest(BaseModel):
+    cost_index_weight: float = 0.5
+    safety_index_weight: float = 0.5
