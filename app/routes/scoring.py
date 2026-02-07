@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..database import get_db
 from ..services.scoring import calculate_relocation_score
+from ..services.ai_predict import predict_best_locations
 
 router = APIRouter(prefix="/score", tags=["Scoring"])
 
@@ -75,3 +76,16 @@ def ranked_locations(user_id: int, db: Session = Depends(get_db)):
 
     # Return as list of dicts
     return [{"location": loc, "score": score} for score, loc in scored]
+
+@router.get("/user/{user_id}/ai-suggest")
+def ai_suggest(user_id: int, top_n: int = 3, db: Session = Depends(get_db)):
+    """
+    Return AI-predicted top relocation locations for a user.
+    """
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user or not user.preferences:
+        raise HTTPException(status_code=404, detail="User or preferences not found")
+
+    locations = db.query(models.Location).all()
+    suggestions = predict_best_locations(user, locations, top_n)
+    return {"top_locations": suggestions}
