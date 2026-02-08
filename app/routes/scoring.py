@@ -69,13 +69,22 @@ def ranked_locations(user_id: int, db: Session = Depends(get_db)):
     scored = []
     for s in saved:
         score = calculate_relocation_score(user.preferences, s.location)
-        scored.append((score, s.location.name))
+        scored.append((score, s.location))
 
     # Sort descending by score
     scored.sort(key=lambda x: x[0], reverse=True)
 
-    # Return as list of dicts
-    return [{"location": loc, "score": score} for score, loc in scored]
+    # Return as list of dicts with nested location object
+    return [{
+        "score": score,
+        "location": {
+            "id": loc.id,
+            "name": loc.name,
+            "country": loc.country,
+            "cost_index": loc.cost_index,
+            "safety_index": loc.safety_index
+        }
+    } for score, loc in scored]
 
 @router.get("/user/{user_id}/ai-suggest")
 def ai_suggest(user_id: int, top_n: int = 3, db: Session = Depends(get_db)):
