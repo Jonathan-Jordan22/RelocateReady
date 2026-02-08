@@ -48,7 +48,7 @@ def score_location(user_id: int, location_id: int, db: Session = Depends(get_db)
         "score": score
     }
 
-@router.get("/user/{user_id}/ranked")
+@router.post("/user/{user_id}/ranked")
 def ranked_locations(user_id: int, db: Session = Depends(get_db)):
     """
     Get all saved locations for a user, ranked by relocation score.
