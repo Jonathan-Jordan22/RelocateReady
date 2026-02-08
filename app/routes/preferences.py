@@ -5,23 +5,23 @@ from ..database import get_db
 
 router = APIRouter(prefix="/preferences", tags=["Preferences"])
 
-@router.post("/{user_id}", response_model=schemas.PreferencesResponse)
-def create_or_update_preferences(user_id: int, prefs: schemas.PreferencesCreate, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+@router.get("/{user_id}", response_model=schemas.ScoreRequest)
+def get_preferences(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(models.Preferences).filter(models.Preferences.user_id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        # Return default preferences if none exist
+        return {"cost_index_weight": 0.5, "safety_index_weight": 0.5}
+    return user
 
-    if user.preferences:
-        # Update existing
-        for key, value in prefs.dict().items():
-            setattr(user.preferences, key, value)
-        db.commit()
-        db.refresh(user.preferences)
-        return user.preferences
+@router.post("/{user_id}", response_model=schemas.ScoreRequest)
+def create_or_update_preferences(user_id: int, prefs: schemas.ScoreRequest, db: Session = Depends(get_db)):
+    user_prefs = db.query(models.Preferences).filter(models.Preferences.user_id == user_id).first()
+    if not user_prefs:
+        user_prefs = models.Preferences(user_id=user_id, **prefs.dict())
+        db.add(user_prefs)
     else:
-        # Create new
-        new_prefs = models.Preferences(user_id=user_id, **prefs.dict())
-        db.add(new_prefs)
-        db.commit()
-        db.refresh(new_prefs)
-        return new_prefs
+        for key, value in prefs.dict().items():
+            setattr(user_prefs, key, value)
+    db.commit()
+    db.refresh(user_prefs)
+    return user_prefs

@@ -16,3 +16,12 @@ class Location(Base):
     country = Column(String, nullable=False)
     cost_index = Column(Float, nullable=True)
     safety_index = Column(Float, nullable=True)
+
+class UserPreferences(Base):
+    __tablename__ = "user_preferences"
+
+    user_id = Column(Integer, ForeignKey("users.id"), primary_key=True)
+    cost_index_weight = Column(Float, default=0.5)
+    safety_index_weight = Column(Float, default=0.5)
+    climate_importance = Column(Float, default=0.5)
+    healthcare_importance = Column(Float, default=0.5)
