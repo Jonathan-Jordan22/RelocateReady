@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from .. import models
+from .. import models, schemas
 from ..database import get_db
 
 router = APIRouter(prefix="/user-locations", tags=["UserLocations"])
@@ -29,14 +29,12 @@ def save_location(user_id: int, location_id: int, db: Session = Depends(get_db))
     db.refresh(saved)
     return {"message": f"{location.name} saved for {user.name}"}
 
-@router.get("/{user_id}")
+@router.get("/{user_id}", response_model=list[schemas.LocationResponse])
 def get_saved_locations(user_id: int, db: Session = Depends(get_db)):
-    """
-    Get all saved locations for a user.
-    """
     user = db.query(models.User).filter(models.User.id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-
+    
+    # Get all saved locations through UserLocation junction table
     saved = db.query(models.UserLocation).filter_by(user_id=user_id).all()
-    return [{"location_id": s.location_id, "location_name": s.location.name} for s in saved]
+    return [s.location for s in saved]
