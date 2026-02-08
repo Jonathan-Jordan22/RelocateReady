@@ -24,3 +24,8 @@ def create_location(location: schemas.LocationCreate, db: Session = Depends(get_
 @router.get("/", response_model=list[schemas.LocationResponse])
 def get_locations(db: Session = Depends(get_db)):
     return db.query(models.Location).all()
+
+@router.get("/countries", response_model=list[str])
+def get_countries(db: Session = Depends(get_db)):
+    countries = db.query(models.Location.country).distinct().all()
+    return [c[0] for c in countries]
