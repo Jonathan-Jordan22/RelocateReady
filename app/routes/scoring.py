@@ -43,7 +43,7 @@ def score_location(user_id: int, location_id: int, db: Session = Depends(get_db)
     score = calculate_relocation_score(user.preferences, location)
 
     return {
-        "user": user.name,
+        "user": f"{user.first_name} {user.last_name}".strip(),
         "location": location.name,
         "score": score
     }
@@ -57,8 +57,19 @@ def ranked_locations(user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
+    # If no preferences exist, create default ones
     if not user.preferences:
-        raise HTTPException(status_code=400, detail="User preferences not set")
+        default_prefs = models.Preferences(
+            user_id=user_id,
+            cost_weight=1.0,
+            safety_weight=1.0,
+            climate_weight=1.0,
+            culture_weight=1.0,
+            job_market_weight=1.0
+        )
+        db.add(default_prefs)
+        db.commit()
+        db.refresh(default_prefs)
 
     # Get all saved locations
     saved = db.query(models.UserLocation).filter_by(user_id=user_id).all()

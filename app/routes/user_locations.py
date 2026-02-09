@@ -27,7 +27,7 @@ def save_location(user_id: int, location_id: int, db: Session = Depends(get_db))
     db.add(saved)
     db.commit()
     db.refresh(saved)
-    return {"message": f"{location.name} saved for {user.name}"}
+    return {"message": f"{location.name} saved for {user.first_name} {user.last_name}".strip()}
 
 @router.get("/{user_id}", response_model=list[schemas.LocationResponse])
 def get_saved_locations(user_id: int, db: Session = Depends(get_db)):
