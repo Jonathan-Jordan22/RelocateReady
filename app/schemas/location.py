@@ -6,6 +6,8 @@ class LocationCreate(BaseModel):
     country: str
     cost_index: float | None = None
     safety_index: float | None = None
+    climate_index: float | None = None
+    healthcare_index: float | None = None
 
 
 class LocationResponse(BaseModel):
@@ -14,6 +16,8 @@ class LocationResponse(BaseModel):
     country: str
     cost_index: float | None = None
     safety_index: float | None = None
+    climate_index: float | None = None
+    healthcare_index: float | None = None
 
     class Config:
         from_attributes = True

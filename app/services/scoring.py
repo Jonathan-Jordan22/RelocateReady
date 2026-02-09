@@ -26,13 +26,13 @@ def calculate_relocation_score(user_preferences, location):
 
     # Climate
     climate_weight = getattr(user_preferences, "climate_importance", 0)
-    climate_score = getattr(location, "climate_score", 0)
+    climate_score = getattr(location, "climate_index", 0)
     weighted_score += climate_score * climate_weight
     total_weight += climate_weight
 
     # Healthcare
     healthcare_weight = getattr(user_preferences, "healthcare_importance", 0)
-    healthcare_score = getattr(location, "healthcare_quality", 0)
+    healthcare_score = getattr(location, "healthcare_index", 0)
     weighted_score += healthcare_score * healthcare_weight
     total_weight += healthcare_weight
 
