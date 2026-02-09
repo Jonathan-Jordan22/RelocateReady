@@ -38,3 +38,23 @@ def get_saved_locations(user_id: int, db: Session = Depends(get_db)):
     # Get all saved locations through UserLocation junction table
     saved = db.query(models.UserLocation).filter_by(user_id=user_id).all()
     return [s.location for s in saved]
+
+@router.delete("/{user_id}/{location_id}")
+def remove_location(user_id: int, location_id: int, db: Session = Depends(get_db)):
+    """
+    Remove a location from a user's saved locations.
+    """
+    # Find the saved location entry
+    saved = db.query(models.UserLocation).filter_by(
+        user_id=user_id, 
+        location_id=location_id
+    ).first()
+    
+    if not saved:
+        raise HTTPException(status_code=404, detail="Saved location not found")
+    
+    # Delete the entry
+    db.delete(saved)
+    db.commit()
+    
+    return {"message": "Location removed from saved list"}
