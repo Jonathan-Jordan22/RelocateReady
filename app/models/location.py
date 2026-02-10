@@ -8,6 +8,7 @@ class Location(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, unique=True, nullable=False)
     country = Column(String, nullable=False)
+    description = Column(String, nullable=True)
     cost_index = Column(Float, nullable=True)
     safety_index = Column(Float, nullable=True)
     climate_index = Column(Float, nullable=True)
