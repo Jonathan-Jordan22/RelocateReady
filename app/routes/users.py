@@ -53,6 +53,30 @@ def login_user(request: schemas.UserLogin, db: Session = Depends(get_db)):
     
     return user
 
+@router.patch("/{user_id}", response_model=schemas.UserResponse)
+@router.put("/{user_id}", response_model=schemas.UserResponse)
+def update_user(user_id: int, user_update: schemas.UserUpdate, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if email is being updated and if it's already taken
+    if user_update.email and user_update.email != user.email:
+        existing_email = db.query(models.User).filter(models.User.email == user_update.email).first()
+        if existing_email:
+            raise HTTPException(status_code=400, detail="Email already registered")
+        user.email = user_update.email
+    
+    # Update fields if provided
+    if user_update.first_name is not None:
+        user.first_name = user_update.first_name
+    if user_update.last_name is not None:
+        user.last_name = user_update.last_name
+    
+    db.commit()
+    db.refresh(user)
+    return user
+
 @router.delete("/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.id == user_id).first()

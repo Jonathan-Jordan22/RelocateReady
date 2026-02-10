@@ -25,6 +25,12 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserUpdate(BaseModel):
+    email: EmailStr | None = None
+    first_name: str | None = None
+    last_name: str | None = None
+
+
 class UserResponse(BaseModel):
     id: int
     email: EmailStr
