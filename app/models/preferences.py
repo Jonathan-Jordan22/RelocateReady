@@ -8,8 +8,8 @@ class Preferences(Base):
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), unique=True)
     
-    cost_importance = Column(Float, default=0.5)
-    safety_importance = Column(Float, default=0.5)
+    cost_importance = Column(Float, default=0.0)
+    safety_importance = Column(Float, default=0.0)
     climate_importance = Column(Float, default=0.0)
     healthcare_importance = Column(Float, default=0.0)
 

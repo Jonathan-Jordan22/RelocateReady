@@ -24,8 +24,8 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     # Create default preferences for the new user
     default_prefs = models.Preferences(
         user_id=new_user.id,
-        cost_importance=0.5,
-        safety_importance=0.5,
+        cost_importance=0.0,
+        safety_importance=0.0,
         climate_importance=0.0,
         healthcare_importance=0.0
     )
