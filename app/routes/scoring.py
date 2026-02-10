@@ -61,11 +61,10 @@ def ranked_locations(user_id: int, db: Session = Depends(get_db)):
     if not user.preferences:
         default_prefs = models.Preferences(
             user_id=user_id,
-            cost_weight=1.0,
-            safety_weight=1.0,
-            climate_weight=1.0,
-            culture_weight=1.0,
-            job_market_weight=1.0
+            cost_importance=0.5,
+            safety_importance=0.5,
+            climate_importance=0.0,
+            healthcare_importance=0.0
         )
         db.add(default_prefs)
         db.commit()

@@ -20,6 +20,18 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
+    
+    # Create default preferences for the new user
+    default_prefs = models.Preferences(
+        user_id=new_user.id,
+        cost_importance=0.5,
+        safety_importance=0.5,
+        climate_importance=0.0,
+        healthcare_importance=0.0
+    )
+    db.add(default_prefs)
+    db.commit()
+    
     return new_user
 
 @router.get("/{user_id}", response_model=schemas.UserResponse)
@@ -40,3 +52,19 @@ def login_user(request: schemas.UserLogin, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
     return user
+
+@router.delete("/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.id == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Delete related preferences and user_locations (cascade)
+    db.query(models.Preferences).filter(models.Preferences.user_id == user_id).delete()
+    db.query(models.UserLocation).filter(models.UserLocation.user_id == user_id).delete()
+    
+    # Delete the user
+    db.delete(user)
+    db.commit()
+    
+    return {"message": f"User {user.first_name} {user.last_name} deleted successfully"}
