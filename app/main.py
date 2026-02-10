@@ -13,7 +13,7 @@ Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000", "https://*.railway.app", "https://*.vercel.app"],
+    allow_origins=["http://localhost:3000", "https://relocate-ready.vercel.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
