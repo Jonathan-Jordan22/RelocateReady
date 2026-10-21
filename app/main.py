@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Depends, HTTPException
 from sqlalchemy.orm import Session
-from .database import engine, Base, get_db
+from .database import engine, Base
+from .dependencies import get_db
 from .models import User, Preferences, UserLocation, Location  # Import all model classes
 from .routes import users, locations, scoring, preferences, user_locations
 from . import schemas
