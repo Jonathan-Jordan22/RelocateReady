@@ -10,12 +10,7 @@ def create_location(location: schemas.LocationCreate, db: Session = Depends(get_
     existing = db.query(models.Location).filter(models.Location.name == location.name).first()
     if existing:
         return existing
-    new_location = models.Location(
-        name=location.name,
-        country=location.country,
-        cost_index=location.cost_index,
-        safety_index=location.safety_index
-    )
+    new_location = models.Location(**location.model_dump())
     db.add(new_location)
     db.commit()
     db.refresh(new_location)

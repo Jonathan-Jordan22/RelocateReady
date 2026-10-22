@@ -16,10 +16,10 @@ def get_preferences(user_id: int, db: Session = Depends(get_db)):
 def create_or_update_preferences(user_id: int, prefs: schemas.PreferencesCreate, db: Session = Depends(get_db)):
     user_prefs = db.query(models.Preferences).filter(models.Preferences.user_id == user_id).first()
     if not user_prefs:
-        user_prefs = models.Preferences(user_id=user_id, **prefs.dict())
+        user_prefs = models.Preferences(user_id=user_id, **prefs.model_dump())
         db.add(user_prefs)
     else:
-        for key, value in prefs.dict().items():
+        for key, value in prefs.model_dump().items():
             setattr(user_prefs, key, value)
     db.commit()
     db.refresh(user_prefs)
