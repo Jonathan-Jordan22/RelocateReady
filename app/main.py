@@ -1,11 +1,14 @@
-from fastapi import FastAPI, Depends, HTTPException
-from sqlalchemy.orm import Session
-from .database import engine, Base, get_db
-from .models import User, Preferences, UserLocation, Location  # Import all model classes
-from .routes import users, locations, scoring, preferences, user_locations
-from . import schemas
-from .utils.password import verify_password
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+from .database import engine, Base
+from .models import (
+    User,
+    Preferences,
+    UserLocation,
+    Location,
+)  # registers tables with Base
+from .routes import users, locations, scoring, preferences, user_locations
 
 app = FastAPI(title="RelocateReady")
 
@@ -25,19 +28,7 @@ app.include_router(scoring.router)
 app.include_router(preferences.router)
 app.include_router(user_locations.router)
 
+
 @app.get("/")
 def health_check():
-    return {"status": "RelocateReady API is running"}
-
-@app.post("/login", response_model=schemas.UserResponse)
-def login(request: schemas.UserLogin, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.email == request.email).first()
-    if not user:
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    # Verify the password
-    if not verify_password(request.password, user.password_hash):
-        raise HTTPException(status_code=401, detail="Invalid email or password")
-    
-    return user
     return {"status": "RelocateReady API is running"}

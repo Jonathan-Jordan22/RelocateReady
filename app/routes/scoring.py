@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import models, schemas
-from ..database import get_db
+from ..dependencies import get_db
 from ..services.scoring import calculate_relocation_score
 from ..services.ai_predict import predict_best_locations
 

@@ -4,7 +4,7 @@ def calculate_relocation_score(user_preferences, location):
     
     user_preferences:
         - can be either:
-            1) a UserPreferences object from the database
+            1) a Preferences object from the database
             2) a ScoreRequest / dict with weights (for POST /score)
     location:
         - Location object from DB
