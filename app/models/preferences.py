@@ -6,7 +6,7 @@ class Preferences(Base):
     __tablename__ = "preferences"
 
     id = Column(Integer, primary_key=True, index=True)
-    user_id = Column(Integer, ForeignKey("users.id"), unique=True)
+    user_id = Column(Integer, ForeignKey("users.id"), unique=True, nullable=False)
     
     cost_importance = Column(Float, default=0.0)
     safety_importance = Column(Float, default=0.0)
