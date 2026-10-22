@@ -1,10 +1,8 @@
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, engine, Base
+from app.database import SessionLocal
 from app.models import Location
 
 def seed_locations():
-    # Create all tables first
-    Base.metadata.create_all(bind=engine)
     
     db: Session = SessionLocal()
 

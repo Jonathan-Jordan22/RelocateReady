@@ -4,3 +4,5 @@ sqlalchemy
 pydantic
 pydantic[email]
 bcrypt
+psycopg[binary]
+python-dotenv
