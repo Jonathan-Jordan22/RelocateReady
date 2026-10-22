@@ -1,18 +1,9 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import engine, Base
-from .models import (
-    User,
-    Preferences,
-    UserLocation,
-    Location,
-)  # registers tables with Base
 from .routes import users, locations, scoring, preferences, user_locations
 
 app = FastAPI(title="RelocateReady")
-
-Base.metadata.create_all(bind=engine)
 
 app.add_middleware(
     CORSMiddleware,
