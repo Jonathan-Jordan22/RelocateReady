@@ -9,33 +9,27 @@ from ..auth import create_access_token
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
-@router.post("/", response_model=schemas.UserResponse)
+@router.post("/", response_model=schemas.Token)
 def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     existing = db.query(models.User).filter(models.User.email == user.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")
-    
-    # Hash the password before storing
-    hashed_password = hash_password(user.password)
-    new_user = models.User(email=user.email, first_name=user.first_name, last_name=user.last_name, password_hash=hashed_password)
-    db.add(new_user)
-    db.commit()
-    db.refresh(new_user)
-    
-    # Create default preferences for the new user
-    default_prefs = models.Preferences(
-        user_id=new_user.id,
-        cost_importance=0.0,
-        safety_importance=0.0,
-        climate_importance=0.0,
-        healthcare_importance=0.0
+
+    new_user = models.User(
+        email=user.email,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        password_hash=hash_password(user.password),
     )
-    db.add(default_prefs)
-    db.commit()
-    
+    db.add(new_user)
+    db.flush()  # assigns new_user.id without committing yet
+
+    db.add(models.Preferences(user_id=new_user.id))
+    db.commit()  # user + preferences saved together, or not at all
+
     return {
         "access_token": create_access_token(new_user.id),
-        "token_type": "Bearer",
+        "token_type": "bearer",
         "user": schemas.UserResponse.model_validate(new_user),
     }
 
