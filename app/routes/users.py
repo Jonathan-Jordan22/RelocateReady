@@ -5,6 +5,7 @@ from .. import models, schemas
 from app.models.user import User
 from ..dependencies import get_db
 from ..utils.password import hash_password, verify_password
+from ..auth import create_access_token
 
 router = APIRouter(prefix="/users", tags=["Users"])
 
@@ -32,7 +33,11 @@ def create_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db.add(default_prefs)
     db.commit()
     
-    return new_user
+    return {
+        "access_token": create_access_token(new_user.id),
+        "token_type": "Bearer",
+        "user": schemas.UserResponse.model_validate(new_user),
+    }
 
 @router.get("/{user_id}", response_model=schemas.UserResponse)
 def get_user(user_id: int, db: Session = Depends(get_db)):
@@ -41,7 +46,7 @@ def get_user(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="User not found")
     return user
 
-@router.post("/login", response_model=schemas.UserResponse)
+@router.post("/login", response_model=schemas.Token)
 def login_user(request: schemas.UserLogin, db: Session = Depends(get_db)):
     user = db.query(models.User).filter(models.User.email == request.email).first()
     if not user:
@@ -51,7 +56,11 @@ def login_user(request: schemas.UserLogin, db: Session = Depends(get_db)):
     if not verify_password(request.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     
-    return user
+    return {
+        "access_token": create_access_token(user.id),
+        "token_type": "Bearer",
+        "user": schemas.UserResponse.model_validate(user),
+    }
 
 @router.patch("/{user_id}", response_model=schemas.UserResponse)
 @router.put("/{user_id}", response_model=schemas.UserResponse)
