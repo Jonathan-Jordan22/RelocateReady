@@ -1,22 +1,32 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
+
 from .. import models, schemas
-from ..dependencies import get_db
+from ..dependencies import get_current_user, get_db
 
 router = APIRouter(prefix="/preferences", tags=["Preferences"])
 
-@router.get("/{user_id}", response_model=schemas.PreferencesResponse)
-def get_preferences(user_id: int, db: Session = Depends(get_db)):
-    prefs = db.query(models.Preferences).filter(models.Preferences.user_id == user_id).first()
+
+@router.get("/me", response_model=schemas.PreferencesResponse)
+def get_my_preferences(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    prefs = db.query(models.Preferences).filter(models.Preferences.user_id == current_user.id).first()
     if not prefs:
         raise HTTPException(status_code=404, detail="Preferences not found")
     return prefs
 
-@router.post("/{user_id}", response_model=schemas.PreferencesResponse)
-def create_or_update_preferences(user_id: int, prefs: schemas.PreferencesCreate, db: Session = Depends(get_db)):
-    user_prefs = db.query(models.Preferences).filter(models.Preferences.user_id == user_id).first()
+
+@router.post("/me", response_model=schemas.PreferencesResponse)
+def save_my_preferences(
+    prefs: schemas.PreferencesCreate,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    user_prefs = db.query(models.Preferences).filter(models.Preferences.user_id == current_user.id).first()
     if not user_prefs:
-        user_prefs = models.Preferences(user_id=user_id, **prefs.model_dump())
+        user_prefs = models.Preferences(user_id=current_user.id, **prefs.model_dump())
         db.add(user_prefs)
     else:
         for key, value in prefs.model_dump().items():

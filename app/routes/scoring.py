@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import models, schemas
-from ..dependencies import get_db
+from ..dependencies import get_db, get_current_user
 from ..services.scoring import calculate_relocation_score
 from ..services.ai_predict import predict_best_locations
 
@@ -26,85 +26,60 @@ def score_locations(request: schemas.ScoreRequest, db: Session = Depends(get_db)
     return [loc for score, loc in scored_locations]
 
 
-# GET /score/{user_id}/{location_id} → score a single location for a specific user
-@router.get("/{user_id}/{location_id}")
-def score_location(user_id: int, location_id: int, db: Session = Depends(get_db)):
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
-
-    location = db.query(models.Location).filter(models.Location.id == location_id).first()
+#@router.get("/me/{location_id}")
+def score_location(
+    location_id: int,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    location = db.get(models.Location, location_id)
     if not location:
         raise HTTPException(status_code=404, detail="Location not found")
-
-    if not hasattr(user, "preferences") or user.preferences is None:
+    if current_user.preferences is None:
         raise HTTPException(status_code=400, detail="User preferences not set")
 
-    score = calculate_relocation_score(user.preferences, location)
-
     return {
-        "user": f"{user.first_name} {user.last_name}".strip(),
         "location": location.name,
-        "score": score
+        "score": calculate_relocation_score(current_user.preferences, location),
     }
 
-@router.post("/user/{user_id}/ranked")
-def ranked_locations(user_id: int, db: Session = Depends(get_db)):
-    """
-    Get all saved locations for a user, ranked by relocation score.
-    """
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found")
 
-    # If no preferences exist, create default ones
-    if not user.preferences:
-        default_prefs = models.Preferences(
-            user_id=user_id,
-            cost_importance=0.0,
-            safety_importance=0.0,
-            climate_importance=0.0,
-            healthcare_importance=0.0
-        )
-        db.add(default_prefs)
+@router.post("/me/ranked")
+def ranked_locations(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Get the current user's saved locations, ranked by relocation score."""
+    if current_user.preferences is None:
+        db.add(models.Preferences(user_id=current_user.id))
         db.commit()
-        db.refresh(default_prefs)
+        db.refresh(current_user)
 
-    # Get all saved locations
-    saved = db.query(models.UserLocation).filter_by(user_id=user_id).all()
+    saved = db.query(models.UserLocation).filter_by(user_id=current_user.id).all()
     if not saved:
         return {"message": "No saved locations"}
 
-    # Calculate scores for each saved location
-    scored = []
-    for s in saved:
-        score = calculate_relocation_score(user.preferences, s.location)
-        scored.append((score, s.location))
-
-    # Sort descending by score
+    scored = [
+        (calculate_relocation_score(current_user.preferences, s.location), s.location)
+        for s in saved
+    ]
     scored.sort(key=lambda x: x[0], reverse=True)
 
-    # Return as list of dicts with nested location object
-    return [{
-        "score": score,
-        "location": {
-            "id": loc.id,
-            "name": loc.name,
-            "country": loc.country,
-            "cost_index": loc.cost_index,
-            "safety_index": loc.safety_index
-        }
-    } for score, loc in scored]
+    return [
+        {"score": score, "location": schemas.LocationResponse.model_validate(loc)}
+        for score, loc in scored
+    ]
 
-@router.get("/user/{user_id}/ai-suggest")
-def ai_suggest(user_id: int, top_n: int = 3, db: Session = Depends(get_db)):
-    """
-    Return AI-predicted top relocation locations for a user.
-    """
-    user = db.query(models.User).filter(models.User.id == user_id).first()
-    if not user or not user.preferences:
-        raise HTTPException(status_code=404, detail="User or preferences not found")
+
+@router.get("/me/ai-suggest")
+def ai_suggest(
+    top_n: int = 3,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """Return the top predicted relocation locations for the current user."""
+    if current_user.preferences is None:
+        raise HTTPException(status_code=404, detail="Preferences not found")
 
     locations = db.query(models.Location).all()
-    suggestions = predict_best_locations(user, locations, top_n)
-    return {"top_locations": suggestions}
+    return {"top_locations": predict_best_locations(current_user, locations, top_n)}
