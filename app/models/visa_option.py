@@ -18,7 +18,7 @@ class VisaOption(Base):
         index=True,
     )
     name = Column(String, nullable=False)
-    Category = Column(String, nullable=False)
+    category = Column(String, nullable=False)
     summary = Column(Text, nullable=False)
     eligibility = Column(Text, nullable=False)
     estimated_cost_usd = Column(Integer, nullable=False)
