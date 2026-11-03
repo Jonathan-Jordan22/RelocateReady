@@ -1,6 +1,15 @@
 from sqlalchemy.orm import Session
 from app.database import SessionLocal
-from app.models import Location
+from app.models import Country, Location
+
+LABEL_TO_COUNTRY = {
+    "Scotland": "United Kingdom",
+    "England": "United Kingdom",
+    "Ireland": "Ireland",
+    "Netherlands": "Netherlands",
+    "Australia": "Australia",
+    "Canada": "Canada",
+}
 
 def seed_locations():
     
@@ -36,7 +45,8 @@ def seed_locations():
         ).first()
 
         if not exists:
-            db.add(Location(**loc))
+            country = db.query(Country).filter_by(name=LABEL_TO_COUNTRY[loc["country"]]).one()
+            db.add(Location(**loc, country_id=country.id))
 
     db.commit()
     db.close()

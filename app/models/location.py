@@ -1,4 +1,5 @@
-from sqlalchemy import Column, Integer, String, Float
+from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy.orm import relationship
 from app.database import Base
 
 
@@ -13,3 +14,5 @@ class Location(Base):
     safety_index = Column(Float, nullable=True)
     climate_index = Column(Float, nullable=True)
     healthcare_index = Column(Float, nullable=True)
+    country_id = Column(Integer, ForeignKey("countries.id", name="fk_locations_country_id"), nullable=False)
+    country_details = relationship("Country", back_populates="locations")
