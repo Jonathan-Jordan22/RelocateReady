@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from .. import models, schemas
 from ..dependencies import get_db
@@ -24,3 +24,10 @@ def get_locations(db: Session = Depends(get_db)):
 def get_countries(db: Session = Depends(get_db)):
     countries = db.query(models.Location.country).distinct().all()
     return [c[0] for c in countries]
+
+@router.get("/{location_id}/visas", response_model=list[schemas.VisaOptionResponse])
+def get_location_visas(location_id: int, db: Session = Depends(get_db)):
+    location = db.get(models.Location, location_id)
+    if not location:
+        raise HTTPException(status_code=404, detail="Location not found")
+    return location.country_details.visa_options
