@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from datetime import date
 
 
 class LocationCreate(BaseModel):
@@ -10,6 +11,9 @@ class LocationCreate(BaseModel):
     safety_index: float | None = None
     climate_index: float | None = None
     healthcare_index: float | None = None
+    avg_rent_usd: int | None = None
+    monthly_living_cost_usd: int | None = None
+    cost_data_as_of: date | None = None
 
 
 class LocationResponse(BaseModel):
@@ -22,6 +26,9 @@ class LocationResponse(BaseModel):
     safety_index: float | None = None
     climate_index: float | None = None
     healthcare_index: float | None = None
+    avg_rent_usd: int | None = None
+    monthly_living_cost_usd: int | None = None
+    cost_data_as_of: date | None = None
 
     class Config:
         from_attributes = True

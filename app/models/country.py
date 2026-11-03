@@ -13,3 +13,4 @@ class Country(Base):
     currency = Column(String(3), nullable=False)
 
     locations = relationship("Location", back_populates="country_details")
+    visa_options = relationship("VisaOption", back_populates="country")
